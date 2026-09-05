@@ -1,0 +1,152 @@
+[
+ {
+  "a": "",
+  "b": "",
+  "ratio": 1.0
+ },
+ {
+  "a": "",
+  "b": "abc",
+  "ratio": 0.0
+ },
+ {
+  "a": "abc",
+  "b": "",
+  "ratio": 0.0
+ },
+ {
+  "a": "abcd",
+  "b": "abcd",
+  "ratio": 1.0
+ },
+ {
+  "a": "abc",
+  "b": "abd",
+  "ratio": 0.6666666667
+ },
+ {
+  "a": "spam",
+  "b": "park",
+  "ratio": 0.5
+ },
+ {
+  "a": "qabxcdcds",
+  "b": "abycdf",
+  "ratio": 0.5333333333
+ },
+ {
+  "a": "product-price",
+  "b": "price",
+  "ratio": 0.5555555556
+ },
+ {
+  "a": "tok_9f3a",
+  "b": "tok_9f3a",
+  "ratio": 1.0
+ },
+ {
+  "a": "tok_9f3a",
+  "b": "tko_9f3b",
+  "ratio": 0.75
+ },
+ {
+  "a": "🎉party",
+  "b": "party🎉",
+  "ratio": 0.8333333333
+ },
+ {
+  "a": "btn btn-primary large",
+  "b": "btn btn-ghost large",
+  "ratio": 0.7
+ },
+ {
+  "a": "https://x.com/a/b?c=1",
+  "b": "https://x.com/a/c?c=1",
+  "ratio": 0.9523809524
+ },
+ {
+  "a": "b310f/ b-32dae/dca1",
+  "b": "da2a//_d1",
+  "ratio": 0.3571428571
+ },
+ {
+  "a": "c-d2f_2/-1ab-g_2a3-2eb",
+  "b": "g1a1aa0gb3ac0d10beg",
+  "ratio": 0.1951219512
+ },
+ {
+  "a": "0badg_0-f_f330g/ac",
+  "b": "be2/30d",
+  "ratio": 0.24
+ },
+ {
+  "a": "0_e c _ 1_ _/ggab",
+  "b": "_a01g-_g-b02g 12/e_21g/de2/",
+  "ratio": 0.2727272727
+ },
+ {
+  "a": "0c_ddbba_3ab_a",
+  "b": "e/",
+  "ratio": 0.0
+ },
+ {
+  "a": "20_e",
+  "b": "f0be",
+  "ratio": 0.5
+ },
+ {
+  "a": "1_beg13__0-0gc20e",
+  "b": "befdb/dc03-_ag -bacf3b1c_0/1g/",
+  "ratio": 0.2978723404
+ },
+ {
+  "a": "da3b0-a/1d22/3g ",
+  "b": "gbf/f121e_1bdgc1ec2 33",
+  "ratio": 0.1578947368
+ },
+ {
+  "a": "_ga0g-0d-a3cdg/c-0ce",
+  "b": "_1121 -b22ga-/",
+  "ratio": 0.2941176471
+ },
+ {
+  "a": "0-   bbb2b-ea0-01a 10",
+  "b": "c3f0_c310-e",
+  "ratio": 0.1875
+ },
+ {
+  "a": "1a_bf 0g3 f",
+  "b": "a2a 11cffc",
+  "ratio": 0.2857142857
+ },
+ {
+  "a": "f1",
+  "b": "b-gfe2gb-0cf/gb3b/e_3ae1 22e1d",
+  "ratio": 0.125
+ },
+ {
+  "a": "_ gc33d2g dg/dgg g23d",
+  "b": "af-bf3cb_c3-g",
+  "ratio": 0.2352941176
+ },
+ {
+  "a": "c-d-",
+  "b": "abb11f2",
+  "ratio": 0.0
+ },
+ {
+  "a": "cc/g 33d/c2d02f0f3 2e1",
+  "b": "f 103_00afff3egb- d1ae0b2c",
+  "ratio": 0.3333333333
+ },
+ {
+  "a": "2db//3-020/ -bbf1c-",
+  "b": "baddfa- 0-c 02",
+  "ratio": 0.2424242424
+ },
+ {
+  "a": "cd_cca_cfc0ce/e",
+  "b": "d3f_2b",
+  "ratio": 0.1904761905
+ }
+]

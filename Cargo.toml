@@ -1,0 +1,22 @@
+[package]
+name = "adaptive-selector"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.75"
+description = "CSS/XPath selectors that survive website redesigns — ported and adapted from Scrapling's adaptive relocation engine"
+license = "BSD-3-Clause"
+readme = "README.md"
+repository = "https://github.com/ecfromthedc/adaptive-selector"
+homepage = "https://github.com/ecfromthedc/adaptive-selector"
+documentation = "https://docs.rs/adaptive-selector"
+keywords = ["scraping", "css-selectors", "dom", "html", "adaptive"]
+categories = ["text-processing", "web-programming"]
+
+[dependencies]
+scraper = "0.23"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+thiserror = "2"
+
+[dev-dependencies]
+insta = { version = "1", features = ["json"] }
