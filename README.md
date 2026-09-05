@@ -82,8 +82,10 @@ the same way Scrapling's Python engine would score it.
 
 ## Install
 
+[![crates.io](https://img.shields.io/crates/v/adaptive-selector.svg)](https://crates.io/crates/adaptive-selector)
+
 ```toml
-adaptive-selector = "0.1"
+adaptive-selector = "0.1.0"
 ```
 
 ## Status
