@@ -85,8 +85,15 @@ the same way Scrapling's Python engine would score it.
 [![crates.io](https://img.shields.io/crates/v/adaptive-selector.svg)](https://crates.io/crates/adaptive-selector)
 
 ```toml
-adaptive-selector = "0.1.0"
+adaptive-selector = "0.1.1"
 ```
+
+## Known limitation
+
+On an HTML *fragment* parse (`scraper` embeds fragments under a synthetic root),
+fingerprints for the root-most elements carry no parent fields where lxml would
+have the document root as parent. Selecting real content elements (the normal
+case) is unaffected.
 
 ## Status
 
