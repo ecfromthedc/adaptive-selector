@@ -2,7 +2,7 @@
 name = "adaptive-selector"
 version = "0.1.0"
 edition = "2021"
-rust-version = "1.75"
+rust-version = "1.85"
 description = "CSS/XPath selectors that survive website redesigns — ported and adapted from Scrapling's adaptive relocation engine"
 license = "BSD-3-Clause"
 readme = "README.md"
