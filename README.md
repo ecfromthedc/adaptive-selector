@@ -47,9 +47,9 @@ Ported check-for-check from Scrapling's `__calculate_similarity_score`:
 | own text | difflib `SequenceMatcher.ratio()` |
 | full attribute dict | keys-ratio × 0.5 + values-ratio × 0.5 |
 | `class`, `id`, `href`, `src` individually | each a separate ratio check |
-| root-to-element tag path | ratio over the joined path |
+| root-to-element tag path | element-wise ratio over the tag sequence |
 | parent name / attribs / text | three more checks when both have parents |
-| sibling tag sequence | ratio over the joined sequence |
+| sibling tag sequence | element-wise ratio over the sequence |
 
 Score = (Σ signal scores / checks) × 100, rounded to 2 decimals. Default
 acceptance threshold is **40** — Scrapling's own default, and the docs there

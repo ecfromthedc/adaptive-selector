@@ -25,16 +25,16 @@ use std::collections::BTreeMap;
 
 pub use difflib::str_ratio;
 
-/// Join a sequence with a separator that cannot appear inside an HTML tag name
-/// or attribute value we care about — mirrors Python comparing tuples directly.
-fn seq_ratio<T: AsRef<str>>(a: &[T], b: &[T]) -> f64 {
-    let joined = |s: &[T]| {
-        s.iter()
-            .map(|x| x.as_ref().to_string())
-            .collect::<Vec<_>>()
-            .join("\u{1}")
-    };
-    str_ratio(&joined(a), &joined(b))
+/// Element-wise ratio over two sequences — exactly what Python does when it
+/// calls `SequenceMatcher` on tuples of strings (as Scrapling does for
+/// attributes, siblings, and paths). Joining with a separator would
+/// manufacture cross-boundary matches (`["btn","primary"]` vs
+/// `["btn primary"]` would score 0.91 joined, 0.0 element-wise), so the
+/// generic matcher is used directly on the slices.
+fn seq_ratio<T: AsRef<str> + PartialEq + std::hash::Hash + Eq + Clone>(a: &[T], b: &[T]) -> f64 {
+    let a_owned: Vec<T> = a.to_vec();
+    let b_owned: Vec<T> = b.to_vec();
+    difflib::SequenceMatcher::new(&a_owned, &b_owned).ratio()
 }
 
 /// Minimum similarity (0–100) for [`AdaptiveDocument::relocate`] to accept a
@@ -199,14 +199,18 @@ fn candidate_fingerprint(element: ElementRef<'_>) -> ElementFingerprint {
             attributes.insert(name.to_string(), stripped.to_string());
         }
     }
-    // Leading text node(s): scraper exposes text as an iterator over all
-    // descendant text; lxml's `element.text` is only the FIRST text chunk.
-    // We take the first non-empty chunk to match lxml semantics.
+    // lxml's `element.text` is the FIRST TEXT NODE CHILD only — not the first
+    // non-empty descendant text. For `<div><span>hi</span>world</div>`, lxml
+    // gives None (first child is an element); a "first non-empty descendant"
+    // read would give "hi" and skew parent-text scoring. Match lxml exactly:
+    // walk direct children, take the first Text node, strip; empty -> None.
     let first_text = element
-        .text()
-        .map(|t| t.trim())
-        .find(|t| !t.is_empty())
-        .map(|t| t.to_string());
+        .children()
+        .find_map(|child| match child.value() {
+            scraper::node::Node::Text(t) => Some(t.trim().to_string()),
+            _ => None,
+        })
+        .filter(|t| !t.is_empty());
 
     // Path: root-to-element tags.
     let mut path = Vec::new();
@@ -423,5 +427,90 @@ mod tests {
         let json = fp.to_json();
         let back = ElementFingerprint::from_json(&json).unwrap();
         assert_eq!(fp, back);
+    }
+}
+
+#[cfg(test)]
+mod adversarial_tests {
+    use super::*;
+
+    #[test]
+    fn relocates_the_right_item_in_a_near_duplicate_list() {
+        // Ten structurally identical rows; only the text differs. A fingerprint
+        // saved from row 3 must relocate to row 3, not row 1.
+        let rows: Vec<String> = (1..=10)
+            .map(|i| format!(r#"<tr><td class="cell">Item {i:02}</td></tr>"#))
+            .collect();
+        let doc1 = AdaptiveDocument::parse(&format!("<table>{}</table>", rows.join("")));
+        // css_first would grab row 1; deliberately save from row 3
+        let saved = doc1.css("td.cell").unwrap()[2].fingerprint();
+
+        // Redesign: table -> div list, same text order
+        let divs: Vec<String> = (1..=10)
+            .map(|i| format!(r#"<div class="cell">Item {i:02}</div>"#))
+            .collect();
+        let doc2 = AdaptiveDocument::parse(&format!(r#"<main>{}</main>"#, divs.join("")));
+        let found = doc2.relocate(&saved, SimilarityThreshold::default());
+        assert_eq!(
+            found.len(),
+            1,
+            "near-duplicate rows must resolve to exactly one"
+        );
+        assert_eq!(found[0].text(), "Item 03");
+    }
+
+    #[test]
+    fn identical_elements_relocate_as_a_group() {
+        // Scrapling returns ALL elements sharing the top score; so do we.
+        let doc1 =
+            AdaptiveDocument::parse(r#"<ul><li class="x">same</li><li class="x">same</li></ul>"#);
+        let saved = doc1.css_first("li.x").unwrap().unwrap().fingerprint();
+        let doc2 =
+            AdaptiveDocument::parse(r#"<ul><li class="y">same</li><li class="y">same</li></ul>"#);
+        let found = doc2.relocate(&saved, SimilarityThreshold::default());
+        assert_eq!(found.len(), 2, "tied top-score elements all return");
+    }
+
+    #[test]
+    fn empty_document_relocates_nothing() {
+        let doc1 = AdaptiveDocument::parse(r#"<p class="a">text</p>"#);
+        let saved = doc1.css_first("p.a").unwrap().unwrap().fingerprint();
+        let doc2 = AdaptiveDocument::parse("");
+        assert!(doc2
+            .relocate(&saved, SimilarityThreshold::default())
+            .is_empty());
+        // and the empty-vs-empty fingerprint must not panic
+        let empty = AdaptiveDocument::parse("");
+        assert!(empty.css_first("p").unwrap().is_none());
+    }
+
+    #[test]
+    fn threshold_zero_still_requires_a_match_group() {
+        // threshold 0 must accept any score >= 0 — but on an empty tree there
+        // are no elements at all, so still empty. Guard the NEG_INFINITY path.
+        let doc1 = AdaptiveDocument::parse(r#"<p class="a">text</p>"#);
+        let saved = doc1.css_first("p.a").unwrap().unwrap().fingerprint();
+        let doc2 = AdaptiveDocument::parse(r#"<div>unrelated</div>"#);
+        let found = doc2.relocate(&saved, SimilarityThreshold(0.0));
+        assert!(
+            !found.is_empty(),
+            "score 0 accepted at threshold 0? checks: div has elements"
+        );
+    }
+
+    #[test]
+    fn fingerprint_is_stable_across_parses() {
+        let html = r#"<div class="p"><span id="s">x</span></div>"#;
+        let a = AdaptiveDocument::parse(html)
+            .css_first("#s")
+            .unwrap()
+            .unwrap()
+            .fingerprint();
+        let b = AdaptiveDocument::parse(html)
+            .css_first("#s")
+            .unwrap()
+            .unwrap()
+            .fingerprint();
+        assert_eq!(a, b);
     }
 }

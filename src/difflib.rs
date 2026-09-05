@@ -35,7 +35,7 @@ impl<'a, T: PartialEq + std::hash::Hash + Eq + Clone> SequenceMatcher<'a, T> {
         if n >= 200 {
             // Difflib's autojunk: any element of b that appears more than 1%
             // as often as b is long is "popular" and excluded from matching.
-            let cutoff = n / 100;
+            let cutoff = n / 100 + 1;
             let mut counts: std::collections::HashMap<T, usize> = Default::default();
             for x in b.iter() {
                 *counts.entry(x.clone()).or_insert(0) += 1;
@@ -191,13 +191,10 @@ mod tests {
 #[cfg(test)]
 mod oracle {
     #[test]
-    fn difflib_oracle_json() {
+    fn difflib_oracle_str_cases() {
         let data = include_str!("../tests/fixtures/difflib_oracle.json");
-        for case in serde_json::from_str::<serde_json::Value>(data)
-            .unwrap()
-            .as_array()
-            .unwrap()
-        {
+        let root = serde_json::from_str::<serde_json::Value>(data).unwrap();
+        for case in root["str"].as_array().unwrap() {
             let a = case["a"].as_str().unwrap();
             let b = case["b"].as_str().unwrap();
             let expected = case["ratio"].as_f64().unwrap();
@@ -205,6 +202,35 @@ mod oracle {
             assert!(
                 (got - expected).abs() < 1e-9,
                 "ratio({a:?}, {b:?}) = {got}, difflib says {expected}"
+            );
+        }
+    }
+
+    #[test]
+    fn difflib_oracle_sequence_cases() {
+        // Element-wise tuple matching — the exact form Scrapling uses for
+        // attributes, siblings, and paths. Red-proves the join-vs-elementwise
+        // divergence: joined separators manufacture matches Python doesn't.
+        let data = include_str!("../tests/fixtures/difflib_oracle.json");
+        let root = serde_json::from_str::<serde_json::Value>(data).unwrap();
+        for case in root["seq"].as_array().unwrap() {
+            let a: Vec<String> = case["a"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .map(|v| v.as_str().unwrap().to_string())
+                .collect();
+            let b: Vec<String> = case["b"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .map(|v| v.as_str().unwrap().to_string())
+                .collect();
+            let expected = case["ratio"].as_f64().unwrap();
+            let got = crate::seq_ratio(&a, &b);
+            assert!(
+                (got - expected).abs() < 1e-9,
+                "seq_ratio({a:?}, {b:?}) = {got}, difflib says {expected}"
             );
         }
     }
